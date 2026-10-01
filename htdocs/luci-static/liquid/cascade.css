@@ -2497,27 +2497,36 @@ select:not([multiple]):not(.cbi-dropdown select):not(.cbi-select select) option:
 	background: var(--glass-bg-hover);
 }
 
-/* 用量表格（内存/存储等）：表格转 block、行用 flex 强制同行
-   （与移动端同一方案；标题列 20ch 允许内部换行、值列占剩余宽度。
-     16ch 会把最长标签"CPU 使用率（%）"挤成两行（实测 16ch 折行、
-     18ch 起单行），20ch 留出中文字体度量的跨平台余量） */
+/* 标签/值两列表格（.table 内含 td[width="33%"]：概览"系统"表、存储/内存
+   用量表等多个页面共用同一标记 → 统一处理、不按页面特化；参考 Argon 让
+   列宽随内容自适应，再叠一层"放不下就换行"的弹性）：
+   ① 宽度足够：标签列 20ch 对齐、值同行（16ch 会把最长标签"CPU 使用率（%）"
+      挤成两行——实测 16ch 折行、18ch 起单行，20ch 留中文字体度量余量）；
+   ② 宽度不足：值整块换到下一行、占满行宽；
+   ③ 极窄：标签列可压缩，标题与值的文字都换行（不再横向滚动/被裁）。
+   （原方案：标签锁死 20ch + 值 nowrap，只能靠横向滚动，窄屏很挤） */
 .table:has(td[width="33%"]) {
 	display: block;
-	overflow-x: auto;
+	overflow-x: auto;   /* 仅兜底：单个不可断的超长串仍可横滚 */
 }
 
 .table:has(td[width="33%"]) tr {
 	display: flex;
+	/* 放不下的列换到下一行，而不是挤压/横向滚动 */
+	flex-wrap: wrap;
 	align-items: center;
-	white-space: nowrap;
+	/* 标题与值都允许换行 */
+	white-space: normal;
 }
 
 .table:has(td[width="33%"]) tr > td {
 	flex: 0 1 auto;
+	min-width: 0;
 }
 
 .table:has(td[width="33%"]) tr > td[width="33%"] {
-	flex: 0 0 20ch;
+	/* 首选 20ch 保持各行列对齐；空间不足时可压缩、文字换行 */
+	flex: 0 1 20ch;
 	max-width: 20ch;
 	white-space: normal;
 	overflow-wrap: break-word;
@@ -2525,8 +2534,12 @@ select:not([multiple]):not(.cbi-dropdown select):not(.cbi-select select) option:
 }
 
 .table:has(td[width="33%"]) tr > td:last-child {
-	flex: 1 1 100%;
-	white-space: nowrap;
+	/* 以内容宽为基准：同行放不下 → 整块换行并撑满该行 */
+	flex: 1 1 auto;
+	min-width: 0;
+	white-space: normal;
+	overflow-wrap: break-word;
+	word-break: break-word;
 }
 
 /* ==========================================================================
