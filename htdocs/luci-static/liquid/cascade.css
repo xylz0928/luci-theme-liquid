@@ -4926,7 +4926,7 @@ table.liquid-actions-overflow th:not(.cbi-section-actions) {
 
 .cbi-section-table.liquid-grid:not(:has(td[data-name="_ifacebox"])):not(:has(td[width="33%"])) tr > td:not(.cbi-section-actions),
 .table.liquid-grid:not(:has(td[data-name="_ifacebox"])):not(:has(td[width="33%"])) tr > td:not(.cbi-section-actions) {
-	flex: 1 1 30% !important;   /* 一行三列 */
+	flex: 1 1 33.33% !important; /* 一行三列，列边界落在 0/33.3/66.6 */
 	display: block !important;
 	min-width: 0 !important;
 	white-space: normal !important;
@@ -4936,19 +4936,26 @@ table.liquid-actions-overflow th:not(.cbi-section-actions) {
 	padding: 6px 10px;
 }
 
-/* 操作列与最后一个内容项同一行、两者顶对齐（用户反馈：上下堆叠时
-   只隔 4px 太近、且按钮在格内垂直居中导致上下不齐）：
-   - flex: 0 1 auto → 按内容宽并排，行内放不下时 flex-wrap 自动换到下一行；
-   - align-self/items: flex-start → 与上一项顶端对齐、按钮贴格顶；
-   - padding 与其它格一致(6px 10px)，左侧 margin 6px + 上一格右 padding 10px
-     = 视觉 16px 间距。 */
+/* 操作列前的内容格：跨满前两列（66.6%），使按钮正好从第三列起点开始
+   —— 与上一行第三列"同列对齐"（用户要求）；右 padding 24px 拉开间距。
+   :has(td.cbi-section-actions) 限定"有操作列的表"，避免误伤两列内容表。 */
+/* 选择器必须带与通用规则相同的 :not(:has(...)) 链：通用规则元素更多，
+   同特异性会输（实测 66.6% 被 33.33% 盖掉），补齐链路 + .td + :nth-last-child 才赢 */
+.cbi-section-table.liquid-grid:not(:has(td[data-name="_ifacebox"])):not(:has(td[width="33%"])):has(td.cbi-section-actions) tr > td.td:nth-last-child(2),
+.table.liquid-grid:not(:has(td[data-name="_ifacebox"])):not(:has(td[width="33%"])):has(td.cbi-section-actions) tr > td.td:nth-last-child(2) {
+	flex: 2 1 66.6% !important;
+	padding-right: 24px;
+}
+
+/* 操作列占第三列：按钮起点 = 上一行第三列内容起点（严格同列对齐）；
+   顶对齐（align-self/items: flex-start）；放不下时 flex-wrap 自动换到下一行 */
 .cbi-section-table.liquid-grid tr > td.cbi-section-actions,
 .table.liquid-grid tr > td.cbi-section-actions {
-	flex: 0 1 auto !important;
+	flex: 1 1 33.4% !important;
 	min-width: 0 !important;
 	align-self: flex-start;
 	align-items: flex-start;
-	margin-left: 6px;
+	margin-left: 0;
 	padding: 6px 10px;
 	white-space: normal !important;
 }
@@ -4975,6 +4982,13 @@ table.liquid-actions-overflow th:not(.cbi-section-actions) {
 .cbi-section-table.liquid-grid thead:not(:has(input)),
 .table.liquid-grid thead:not(:has(input)) {
 	display: none !important;
+}
+
+/* 三列网格下操作列仅占 1/3 宽：按钮相邻间距 8→4px，尽量保持一行
+   （1000px 实测：4 按钮约 290px，格内可用 284px，8px 间距会挤成两行） */
+.cbi-section-table.liquid-grid td.cbi-section-actions > div > * + *,
+.table.liquid-grid td.cbi-section-actions > div > * + * {
+	margin-left: 4px;
 }
 
 /* 折叠态（按钮优先折叠）在此模式下的适配：操作列已占整行 → 按钮横排折行；
