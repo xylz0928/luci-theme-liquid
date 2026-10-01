@@ -5204,5 +5204,8 @@ body:is([data-page="admin-system-startup"], [data-page="admin/system/startup"])
 
 #modal_overlay > .modal:has(input[type="file"]) input[type="file"] {
 	display: block;
-	margin-left: auto;
+	/* 选择文件按钮保持左对齐（用户指定）：块级 + margin-right:auto
+	   推到左侧——只靠 text-align:right 会把它甩到右边 */
+	margin-right: auto;
+	margin-left: 0;
 }
