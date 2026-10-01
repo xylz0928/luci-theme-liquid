@@ -5191,10 +5191,17 @@ body:is([data-page="admin-system-startup"], [data-page="admin/system/startup"])
 	max-width: 100%;
 }
 
-/* 文件框与按钮行的间距：原本只有 7px（.button-row 无 margin），太挤；
-   拉开到 20px（用户要求"选择文件与取消/上传之间间距大一点"）。 */
-#modal_overlay > .modal:has(input[type="file"]) .button-row {
-	margin-top: 20px;
+/* ui.js 的上传弹窗真实结构（hideModal 里的 uploadFile）：
+     .modal > p(说明) + div[display:flex] > (.left[flex:1] = 选择文件按钮
+                                            .right[flex:1] = 取消 + 上传)
+   默认左右各占一半、右侧组贴中线，两组之间只有 129px 且上传按钮离右缘 56px。
+   用户要求拉开"选择文件"与"取消/上传"的间距 → 右侧整组靠右并加左间距。 */
+#modal_overlay > .modal:has(input[type="file"]) > div[style*="display:flex"] .right {
+	display: flex;
+	align-items: center;
+	justify-content: flex-end;
+	gap: 10px;
+	margin-left: 32px;
 }
 
 /* 按钮收拢到右侧一组：.button-row 首按钮的 margin-right:auto 会把
