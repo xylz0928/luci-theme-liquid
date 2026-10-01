@@ -5234,3 +5234,14 @@ body:is([data-page="admin-system-startup"], [data-page="admin/system/startup"])
 	margin-right: auto;
 	margin-left: 0;
 }
+
+/* ===== 会话过期/重新登录弹窗（luci.js notifySessionExpiry）收窄 =====
+   结构（源码确认）：.modal > h4 + div.alert-message.warning + div.right(登录按钮)。
+   它走通用规则 width:80% → 1920 屏上占 1536px，只有一句话却拉满整屏（用户反馈）。
+   按内容收窄：fit-content + 保底 420px（窄屏 92vw），上限 80vw；只命中"同时带
+   直接子级 .alert-message 与 .right"的弹窗，与上传弹窗（.right 在 flex 行内）不冲突。 */
+#modal_overlay > .modal:has(> .alert-message):has(> .right) {
+	width: fit-content;
+	min-width: min(420px, 92vw);
+	max-width: 80vw;
+}
