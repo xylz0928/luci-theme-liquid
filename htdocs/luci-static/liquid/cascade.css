@@ -5110,3 +5110,57 @@ table.liquid-actions-overflow.liquid-grid th:not(.cbi-section-actions) {
 	overflow-wrap: normal !important;
 	word-break: normal !important;
 }
+
+/* ===== 启动项页（admin/system/startup）：操作按钮按语义上色 =====
+   该页操作格内 5 个子元素顺序固定（startup.js rows.push）：
+   ① 启用开关（cbi-button-positive=已启用 / negative=已禁用）
+   ② 启动 Start  ③ 重启 Restart  ④ 重新加载 Reload  ⑤ 停止 Stop
+   需求：启用/启动=绿、重启/重新加载=橙、停止=红；仅本页生效。
+   主题现有 .cbi-button-positive 等走 accent 蓝渐变，这里按语义覆盖，
+   含 :hover 态（否则 hover 会被主题的 accent-grad 规则抢回蓝色）。 */
+body:is([data-page="admin-system-startup"], [data-page="admin/system/startup"])
+	td.cbi-section-actions > div > :nth-child(2),
+body:is([data-page="admin-system-startup"], [data-page="admin/system/startup"])
+	td.cbi-section-actions > div > .cbi-button-positive {
+	/* 启动 + 启用(已启用态) → 绿 */
+	color: var(--on-success-color);
+	background: linear-gradient(135deg, #34d399, var(--success-color-medium));
+	box-shadow: 0 6px 16px rgba(var(--success-color-high-rgb), 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.35);
+}
+
+body:is([data-page="admin-system-startup"], [data-page="admin/system/startup"])
+	td.cbi-section-actions > div > :nth-child(2):hover,
+body:is([data-page="admin-system-startup"], [data-page="admin/system/startup"])
+	td.cbi-section-actions > div > .cbi-button-positive:hover {
+	filter: brightness(1.08);
+}
+
+body:is([data-page="admin-system-startup"], [data-page="admin/system/startup"])
+	td.cbi-section-actions > div > :nth-child(3),
+body:is([data-page="admin-system-startup"], [data-page="admin/system/startup"])
+	td.cbi-section-actions > div > :nth-child(4) {
+	/* 重启 + 重新加载 → 橙（复用主题 amber 强调色渐变） */
+	color: #ffffff;
+	background: linear-gradient(135deg, #ffc04a 0%, #e8940f 48%, #c47100 100%);
+	box-shadow: 0 6px 16px rgba(232, 148, 15, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.35);
+}
+
+body:is([data-page="admin-system-startup"], [data-page="admin/system/startup"])
+	td.cbi-section-actions > div > :nth-child(3):hover,
+body:is([data-page="admin-system-startup"], [data-page="admin/system/startup"])
+	td.cbi-section-actions > div > :nth-child(4):hover {
+	filter: brightness(1.08);
+}
+
+body:is([data-page="admin-system-startup"], [data-page="admin/system/startup"])
+	td.cbi-section-actions > div > :nth-child(5) {
+	/* 停止 → 红（与主题 negative 同配方，保证禁用态/其它页一致观感） */
+	color: var(--on-error-color);
+	background: linear-gradient(135deg, #f06767, var(--error-color-high));
+	box-shadow: 0 6px 16px rgba(var(--error-color-high-rgb), 0.35);
+}
+
+body:is([data-page="admin-system-startup"], [data-page="admin/system/startup"])
+	td.cbi-section-actions > div > :nth-child(5):hover {
+	filter: brightness(1.08);
+}
