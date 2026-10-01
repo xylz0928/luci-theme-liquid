@@ -5026,3 +5026,26 @@ table.liquid-actions-overflow.liquid-grid th:not(.cbi-section-actions) {
 		min-width: 0 !important;
 	}
 }
+
+/* ===== 启动项页（admin/system/startup）：操作列 5 个按钮排 3+2 =====
+   该页移动端按钮容器为整行宽，5 个按钮自然折行会排成 4+1（最后孤零零
+   一个，不美观）。改为 3 列网格：第一行 3 个、第二行 2 个。
+   仅按该页 data-page 生效（用户要求"单独优化这里"），其它表格不受影响。 */
+@media screen and (max-width: 854px) {
+	/* data-page 两种写法都匹配（连字符式 admin-system-startup /
+	   路径式 admin/system/startup，主题与 openclash 用前者） */
+	body:is([data-page="admin-system-startup"], [data-page="admin/system/startup"])
+		td.cbi-section-actions > div {
+		display: grid;
+		grid-template-columns: repeat(3, max-content);
+		justify-content: start;
+		align-items: start;
+		gap: 6px 8px;
+	}
+
+	/* 网格自带 gap，清掉相邻按钮的 margin-left（否则间距叠加不均） */
+	body:is([data-page="admin-system-startup"], [data-page="admin/system/startup"])
+		td.cbi-section-actions > div > * + * {
+		margin-left: 0;
+	}
+}
