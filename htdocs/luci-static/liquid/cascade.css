@@ -5193,6 +5193,12 @@ body:is([data-page="admin-system-startup"], [data-page="admin/system/startup"])
 	margin-right: 0;
 }
 
+/* 方案2（用户选定）：标题与说明文字**居中**——左对齐时短文本行右侧会留
+   128~195px 空白，居中后空白分到两侧更平衡；文件框仍左对齐、按钮仍右对齐 */
+#modal_overlay > .modal:has(input[type="file"]) > :not(input):not(.button-row) {
+	text-align: center;
+}
+
 /* 对齐方式（用户最终指定）：标题、说明文字、选择文件按钮一律**左对齐**，
    只有"取消/上传"两个按钮右对齐（.button-row 本就是 flex-end）。
    （曾试过内容整体右对齐，用户反馈说明文字也要左 → 回到默认左对齐，
