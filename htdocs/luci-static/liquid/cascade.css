@@ -5191,6 +5191,12 @@ body:is([data-page="admin-system-startup"], [data-page="admin/system/startup"])
 	max-width: 100%;
 }
 
+/* 文件框与按钮行的间距：原本只有 7px（.button-row 无 margin），太挤；
+   拉开到 20px（用户要求"选择文件与取消/上传之间间距大一点"）。 */
+#modal_overlay > .modal:has(input[type="file"]) .button-row {
+	margin-top: 20px;
+}
+
 /* 按钮收拢到右侧一组：.button-row 首按钮的 margin-right:auto 会把
    "取消"甩到最左、"上传"顶到最右（间距 300+px 的空白带）。小弹窗里取消。 */
 #modal_overlay > .modal:has(input[type="file"]) .button-row > button:first-of-type {
