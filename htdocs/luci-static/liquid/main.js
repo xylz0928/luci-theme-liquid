@@ -2317,7 +2317,60 @@
 		}
 	}
 
+	/* 给多列表的单元格回填 data-title（文案取自同列表头 th）——窄屏"单元格
+	   自带表头"（td::before { content: attr(data-title) }，Argon 同款）依赖它。
+	   概览 include 表（DHCP 租约 / DDNS / WiFi / UPnP …）与 DDNS 服务页的
+	   自绘单元格都没有 data-title，这里统一补齐：只补缺失、不覆盖已有、
+	   跳过操作列；轮询重绘出的新行下次判定时会补上。attribute 写入不触发
+	   我们只监听 childList 的观察者 → 不会造成回调循环。 */
+	function backfillCellTitles() {
+		var tables = document.querySelectorAll('table.cbi-section-table, table.table');
+		for (var i = 0; i < tables.length; i++) {
+			var t = tables[i];
+			var head = t.querySelector(':scope > thead > tr, :scope > tbody > tr.table-titles, :scope > tbody > tr.cbi-section-table-titles, :scope > tr.table-titles');
+			if (!head) continue;
+			var ths = head.children;
+			var rows = t.querySelectorAll(':scope > tbody > tr');
+			for (var r = 0; r < rows.length; r++) {
+				var cells = rows[r].children;
+				for (var c = 0; c < ths.length && c < cells.length; c++) {
+					var cell = cells[c];
+					if (cell.tagName !== 'TD' || cell.hasAttribute('data-title') ||
+						cell.classList.contains('cbi-section-actions'))
+						continue;
+					var txt = (ths[c].innerText || ths[c].textContent || '')
+						.replace(/\s+/g, ' ').trim();
+					if (txt) cell.setAttribute('data-title', txt);
+				}
+			}
+		}
+	}
+
+	/* 多列表响应式打标：视口 ≤1100px 时给表格加 .liquid-grid（CSS 端据此
+	   切到"一行三列 + 单元格自带表头"）。断点放在这里（matchMedia 单一来源），
+	   CSS 只认类、用 !important 压过 ≤854px 既有的 display:flex 规则。
+	   1100px 是实测值：1150px 时中间列尚有 6.5 字/行，1100px 掉到 4.3；
+	   移动端则是整表按内容宽撑开、只能横向滚动。 */
+	function syncGridView() {
+		var narrow = window.matchMedia
+			? window.matchMedia('(max-width: 1100px)').matches
+			: window.innerWidth <= 1100;
+		var list = document.querySelectorAll('table.cbi-section-table, table.table');
+		for (var i = 0; i < list.length; i++) {
+			var t = list[i];
+			/* 两类有专属布局的表不打标（CSS 端同样排除，这里保持标记语义一致）：
+			   接口页表（td[data-name="_ifacebox"]）、标签/值两列表（td[width="33%"]） */
+			var skip = t.querySelector('td[data-name="_ifacebox"], td[width="33%"]');
+			if (narrow && !skip && t.querySelector('td'))
+				t.classList.add('liquid-grid');
+			else
+				t.classList.remove('liquid-grid');
+		}
+	}
+
 	function updateOverflowTables() {
+		syncGridView();
+		backfillCellTitles();
 		var list = document.querySelectorAll('table.cbi-section-table, table.table');
 		for (var i = 0; i < list.length; i++) {
 			var t = list[i];

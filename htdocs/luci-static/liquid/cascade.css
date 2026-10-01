@@ -4885,3 +4885,96 @@ table.liquid-actions-overflow th:not(.cbi-section-actions) {
 		align-items: center;
 	}
 }
+
+/* ==========================================================================
+   多列宽表响应式：一行三列 + 单元格自带表头（.liquid-grid，由 main.js 打标）
+   -------------------------------------------------------------------------
+   适用：DHCP 租约 / DDNS / WiFi / UPnP / 进程 等多列表（GridSection 与概览
+   include 表）。断点 1100px（实测：1150px 时"状态"列尚有 6.5 字/行，
+   1100px 掉到 4.3；移动端则整表按内容宽撑开只能横滚）。
+
+   断点判定放在 main.js 的 matchMedia（单一来源），这里只按 .liquid-grid 类
+   生效；关键声明用 !important —— ≤854px 的既有规则给 tr/td 设过
+   display:flex（同特异性会靠"后写"抢胜负，实测会输），必须显式压过。
+
+   排除两类已有专属布局的表：
+   - 接口页表（td[data-name="_ifacebox"]）：图标行有独立两行布局；
+   - 标签/值两列表（td[width="33%"]）：已有"20ch 标签列 + 值换行"方案。
+   单元格自带表头用 td::before 显示 data-title（Argon 同款机制，文案由
+   main.js 从同列 th 回填）；原表头行隐藏，带筛选输入的 thead 保留。 */
+.cbi-section-table.liquid-grid:not(:has(td[data-name="_ifacebox"])):not(:has(td[width="33%"])),
+.table.liquid-grid:not(:has(td[data-name="_ifacebox"])):not(:has(td[width="33%"])) {
+	display: block;
+	width: 100% !important;
+	min-width: 100% !important;
+	overflow-x: auto;
+}
+
+.cbi-section-table.liquid-grid:not(:has(td[data-name="_ifacebox"])):not(:has(td[width="33%"])) tr:not(.table-titles):not(.cbi-section-table-titles),
+.table.liquid-grid:not(:has(td[data-name="_ifacebox"])):not(:has(td[width="33%"])) tr:not(.table-titles):not(.cbi-section-table-titles) {
+	display: flex !important;
+	/* 放不下的列连同表头换到下一行，而不是挤压成一字一行/横向滚动 */
+	flex-wrap: wrap !important;
+	align-items: stretch;
+	white-space: normal !important;
+	row-gap: 4px;
+}
+
+.cbi-section-table.liquid-grid:not(:has(td[data-name="_ifacebox"])):not(:has(td[width="33%"])) tr > td:not(.cbi-section-actions),
+.table.liquid-grid:not(:has(td[data-name="_ifacebox"])):not(:has(td[width="33%"])) tr > td:not(.cbi-section-actions) {
+	flex: 1 1 30% !important;   /* 一行三列 */
+	display: block !important;
+	min-width: 0 !important;
+	white-space: normal !important;
+	overflow-wrap: break-word;
+	word-break: normal;         /* 按词换行，不再一字一断 */
+	border-bottom: 0 !important;
+	padding: 6px 10px;
+}
+
+/* 操作列独占一整行放按钮 */
+.cbi-section-table.liquid-grid tr > td.cbi-section-actions,
+.table.liquid-grid tr > td.cbi-section-actions {
+	flex: 1 1 100% !important;
+	white-space: normal !important;
+}
+
+/* 单元格自带表头（Argon 同款；文案由 main.js 从同列 th 回填 data-title） */
+.cbi-section-table.liquid-grid td[data-title]::before,
+.table.liquid-grid td[data-title]::before {
+	content: attr(data-title);
+	display: block;
+	font-size: 11px;
+	font-weight: 600;
+	line-height: 1.45;
+	letter-spacing: .2px;
+	color: var(--text-color-medium);
+	opacity: .9;
+	margin-bottom: 1px;
+}
+
+/* 原表头行隐藏（每格已自带表头）；带筛选输入的 thead 保留。
+   !important 必须：≤854px 的既有规则给 tr 设了 display:flex !important */
+.cbi-section-table.liquid-grid tr.table-titles,
+.cbi-section-table.liquid-grid tr.cbi-section-table-titles,
+.table.liquid-grid tr.table-titles,
+.cbi-section-table.liquid-grid thead:not(:has(input)),
+.table.liquid-grid thead:not(:has(input)) {
+	display: none !important;
+}
+
+/* 折叠态（按钮优先折叠）在此模式下的适配：操作列已占整行 → 按钮横排折行；
+   文字格的"一字一断"兜底改回按词换行 */
+/* 仅 grid 态（视口≤1100、操作列已独占整行）才把折叠按钮改横排；
+   桌面宽屏折叠态维持 r17 的"每个按钮一行"纵排 */
+table.liquid-actions-overflow.liquid-grid td.cbi-section-actions > div {
+	flex-direction: row;
+	flex-wrap: wrap;
+	align-items: center;
+}
+
+table.liquid-actions-overflow.liquid-grid td:not(.cbi-section-actions),
+table.liquid-actions-overflow.liquid-grid th:not(.cbi-section-actions) {
+	word-break: normal;
+	overflow-wrap: break-word;
+}
