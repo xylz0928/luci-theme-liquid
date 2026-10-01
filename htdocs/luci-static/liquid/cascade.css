@@ -5059,23 +5059,24 @@ table.liquid-actions-overflow.liquid-grid th:not(.cbi-section-actions) {
 	}
 }
 
-/* ===== 有标题的操作格：标题在上、按钮在下、两者水平居中 =====
+/* ===== 有标题的操作格：标题在上、按钮在下、两者左对齐 =====
    ui.Table（cbi_update_table）会把表头文案复制成单元格 data-title、并把
    表头的 cbi-section-actions 类复制过来——如概览 DHCP 租约表的最后一列
    （表头"静态租约" / 内容"设为静态"按钮）。该格在 ≤854px 被通用规则
    变成 flex 行 → 标题与按钮排成左右两列，看起来像"两列东西"。
-   实际语义：标题=这列的表头，按钮=这列的内容 → 改为上下堆叠 + 水平居中。 */
+   实际语义：标题=这列的表头，按钮=这列的内容 → 上下堆叠；
+   对齐方式经用户确认为左对齐（先居中后改回左对齐更合适）。 */
 .cbi-section-table.liquid-grid td.cbi-section-actions[data-title],
 .table.liquid-grid td.cbi-section-actions[data-title] {
 	display: block !important;   /* ::before 标题与按钮上下排 */
-	text-align: center;          /* 按钮在标题文字正下方、左右居中 */
+	text-align: left;            /* 标题与按钮左对齐 */
 }
 
-/* 若格内是按钮容器（折叠/按钮组），同样整体居中 */
+/* 若格内是按钮容器（折叠/按钮组），同样左对齐 */
 .cbi-section-table.liquid-grid td.cbi-section-actions[data-title] > div,
 .table.liquid-grid td.cbi-section-actions[data-title] > div {
-	text-align: center;
-	justify-content: center;
+	text-align: left;
+	justify-content: flex-start;
 }
 
 /* ===== 概览"系统"卡片（标签/值两列表 td[width="33%"]）：每行强制单行 =====
