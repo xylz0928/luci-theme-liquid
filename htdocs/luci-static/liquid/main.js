@@ -2232,6 +2232,7 @@
 	   维持原有排版与横向滚动。 */
 	var TBL_CLS = 'liquid-actions-overflow';
 	var tblTimer = null;
+	var tblRaf = 0;
 
 	/* 元素内容盒宽度：clientWidth 减掉左右 padding（表格比的是父级内容区） */
 	function contentBoxWidth(el) {
@@ -2256,50 +2257,103 @@
 		return w;
 	}
 
+	/* 在“自然状态”（未折叠 + 操作列内联列宽为空）下执行 fn，随后原样还原。
+	   所有样式改动与读数都发生在同一任务内，浏览器不会在中途绘制 ——
+	   所以这套测量不会像“120ms 后再改样式”那样被肉眼看到（闪一下）。
+	   内联列宽只在测量期间临时清空：量的才是“按钮横排放得下”的真实
+	   需求宽（form.js stabilizeActionColumnWidth 写的值在折叠态下是
+	   纵排后的 ~63px，会把需求宽算小）。 */
+	function inNaturalState(t, fn) {
+		var had = t.classList.contains(TBL_CLS);
+		if (had) t.classList.remove(TBL_CLS);
+		var acts = t.querySelectorAll('th.cbi-section-actions, td.cbi-section-actions');
+		var saved = [];
+		for (var i = 0; i < acts.length; i++) {
+			saved.push([acts[i], acts[i].style.width, acts[i].style.minWidth]);
+			acts[i].style.width = '';
+			acts[i].style.minWidth = '';
+		}
+		var ret = fn();
+		for (var k = 0; k < saved.length; k++) {
+			saved[k][0].style.width = saved[k][1];
+			saved[k][0].style.minWidth = saved[k][2];
+		}
+		if (had) t.classList.add(TBL_CLS);
+		return ret;
+	}
+
 	function tableOverflows(t) {
-		var doc = document.documentElement;
-		var parent = t.parentElement;
-		/* 1) 表格内容已超出表格盒（自身裁剪 / 内部横滚） */
-		if (t.scrollWidth > t.clientWidth + 1)
-			return true;
-		/* 2) 核心：需求宽（按钮横排放得下）> 可用宽 → 从按钮开始折 */
-		var need = needWidth(t);
-		var avail = parent ? contentBoxWidth(parent) : Infinity;
-		if (need > avail + 1 || need > doc.clientWidth + 1)
-			return true;
-		/* 3) 表格盒右缘已越出屏幕、且文档无法横向滚过去（被祖先裁切） */
-		var rect = t.getBoundingClientRect();
-		return rect.right > doc.clientWidth + 1 && doc.scrollWidth <= doc.clientWidth + 1;
+		/* 全程在“自然状态”（未折叠 + 操作列内联宽为空）下判定：
+		   类的摘挂、内联宽的清还都在同一任务内完成，浏览器中途不绘制
+		   → 测量本身不产生可见闪动 */
+		return inNaturalState(t, function () {
+			var doc = document.documentElement;
+			var parent = t.parentElement;
+			/* 1) 表格内容已超出表格盒（自身裁剪 / 内部横滚） */
+			if (t.scrollWidth > t.clientWidth + 1)
+				return true;
+			/* 2) 核心：需求宽（按钮横排放得下）> 可用宽 → 从按钮开始折 */
+			var need = needWidth(t);
+			var avail = parent ? contentBoxWidth(parent) : Infinity;
+			if (need > avail + 1 || need > doc.clientWidth + 1)
+				return true;
+			/* 3) 表格盒右缘已越出屏幕、且文档无法横向滚过去（被祖先裁切） */
+			var rect = t.getBoundingClientRect();
+			return rect.right > doc.clientWidth + 1 && doc.scrollWidth <= doc.clientWidth + 1;
+		});
+	}
+
+	/* form.js stabilizeActionColumnWidth 把操作列锁成内联 width/min-width；
+	   折叠态下它量到的是“按钮纵排”宽（~63px），解除折叠后这个残留值会
+	   卡住按钮 —— 只在“取消折叠”这一刻清掉，平时不动它（否则每次判定
+	   都会改动列宽 → 页面闪一下） */
+	function clearActionInlineWidths(t) {
+		var acts = t.querySelectorAll('th.cbi-section-actions, td.cbi-section-actions');
+		for (var i = 0; i < acts.length; i++) {
+			if (acts[i].style.width || acts[i].style.minWidth) {
+				acts[i].style.width = '';
+				acts[i].style.minWidth = '';
+			}
+		}
 	}
 
 	function updateOverflowTables() {
 		var list = document.querySelectorAll('table.cbi-section-table, table.table');
 		for (var i = 0; i < list.length; i++) {
 			var t = list[i];
-			t.classList.remove(TBL_CLS);
-			/* 清掉 form.js stabilizeActionColumnWidth 写死的内联列宽：
-			   类还在时它量到的是“按钮纵排”的宽度（最宽按钮 ~63px），
-			   窗口变宽、类移除后这个残留值会让 needWidth 少算一截、
-			   判定漏折；清掉后列宽回归 auto 布局（= 按钮横排的
-			   max-content，与 stabilize 结果一致），量到的才是
-			   “按钮横排放得下”所需的真实宽度 */
-			var acts = t.querySelectorAll('th.cbi-section-actions, td.cbi-section-actions');
-			for (var j = 0; j < acts.length; j++) {
-				if (acts[j].style.width || acts[j].style.minWidth) {
-					acts[j].style.width = '';
-					acts[j].style.minWidth = '';
-				}
+			/* 无操作列的表（概览"系统/内存/存储/网络"等标签-值两列表）与
+			   折叠逻辑无关：不判定、不写任何样式 —— 与标签-值换行新规则
+			   零交集（那套规则只认 td[width="33%"]），稳态下零 DOM 写 */
+			if (!t.querySelector('.cbi-section-actions')) {
+				if (t.classList.contains(TBL_CLS))
+					t.classList.remove(TBL_CLS);
+				continue;
 			}
-			if (t.querySelector('.cbi-section-actions') && tableOverflows(t))
+			var want = tableOverflows(t);
+			var has = t.classList.contains(TBL_CLS);
+			if (want && !has) {
 				t.classList.add(TBL_CLS);
+			} else if (!want && has) {
+				t.classList.remove(TBL_CLS);
+				clearActionInlineWidths(t);
+			}
+			/* 其余两种情况（要折且已折 / 不折且未折）净变化为零，不动 DOM */
 		}
 	}
 
 	function scheduleOverflowTables() {
+		/* rAF：在下一帧绘制前完成判定 → 首帧即最终状态，不再看到
+		   “先按一行绘制、再瞬间堆叠”的折叠过程（用户反馈的闪一下） */
+		if (!tblRaf) {
+			tblRaf = window.requestAnimationFrame(function () {
+				tblRaf = 0;
+				updateOverflowTables();
+			});
+		}
+		/* 仍在 form.js 的 setTimeout(stabilize 列宽) 与其 resize 处理之后
+		   补一次校正，拿到的才是内联列宽写完后的稳定状态 */
 		if (tblTimer)
 			clearTimeout(tblTimer);
-		/* 延后 120ms：排在 form.js 的 setTimeout(stabilize 列宽) 与其
-		   resize 处理之后量，拿到的才是内联列宽写完后的稳定状态 */
 		tblTimer = setTimeout(function () {
 			tblTimer = null;
 			updateOverflowTables();
