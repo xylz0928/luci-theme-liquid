@@ -4917,7 +4917,8 @@ table.liquid-actions-overflow th:not(.cbi-section-actions) {
 	flex-wrap: wrap !important;
 	align-items: stretch;
 	white-space: normal !important;
-	row-gap: 4px;
+	/* 行与行之间的呼吸感：操作列换行到下一行时不至于贴着上一行 */
+	row-gap: 10px;
 }
 
 .cbi-section-table.liquid-grid:not(:has(td[data-name="_ifacebox"])):not(:has(td[width="33%"])) tr > td:not(.cbi-section-actions),
@@ -4932,10 +4933,20 @@ table.liquid-actions-overflow th:not(.cbi-section-actions) {
 	padding: 6px 10px;
 }
 
-/* 操作列独占一整行放按钮 */
+/* 操作列与最后一个内容项同一行、两者顶对齐（用户反馈：上下堆叠时
+   只隔 4px 太近、且按钮在格内垂直居中导致上下不齐）：
+   - flex: 0 1 auto → 按内容宽并排，行内放不下时 flex-wrap 自动换到下一行；
+   - align-self/items: flex-start → 与上一项顶端对齐、按钮贴格顶；
+   - padding 与其它格一致(6px 10px)，左侧 margin 6px + 上一格右 padding 10px
+     = 视觉 16px 间距。 */
 .cbi-section-table.liquid-grid tr > td.cbi-section-actions,
 .table.liquid-grid tr > td.cbi-section-actions {
-	flex: 1 1 100% !important;
+	flex: 0 1 auto !important;
+	min-width: 0 !important;
+	align-self: flex-start;
+	align-items: flex-start;
+	margin-left: 6px;
+	padding: 6px 10px;
 	white-space: normal !important;
 }
 
