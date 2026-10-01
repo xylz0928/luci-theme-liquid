@@ -5164,3 +5164,87 @@ body:is([data-page="admin-system-startup"], [data-page="admin/system/startup"])
 	td.cbi-section-actions > div > :nth-child(5):hover {
 	filter: brightness(1.08);
 }
+
+/* ===== 小体积弹窗：含文件选择控件的对话框按内容收窄 =====
+   （用户反馈："选择要上传的文件…取消/上传"这类弹窗异常宽，右侧大片空白）
+   根因：#modal_overlay > .modal 固定 width:80%（max 80vw）——1920 屏上
+   一个只有标题+文件框+两个按钮的对话框也占 1536px；再叠加 .button-row
+   的 flex-end + 首按钮 margin-right:auto（取消在最左、上传在最右），
+   空白被进一步拉开。
+   方案：只对含 input[type=file] 的弹窗收窄到 520px（按内容包裹、文字
+   正常换行），按钮行随之收拢；其它表单弹窗保持 80% 不变。 */
+#modal_overlay > .modal:has(input[type="file"]) {
+	/* 按内容自适应（fit-content）：内容已全部左对齐，固定 520px 会在右侧
+	   留出大片空白（实测344px）。弹窗宽=最宽一行内容+内边距；超长说明文字
+	   仍会被 max-width 限制并正常换行 */
+	/* 宽度策略（用户定量要求：约当前的 180% ≈545px，且按钮/内容不许换行）：
+	   - fit-content：内容长时随内容展开（上限 80vw），绝不逼元素换行；
+	   - min-width 545：短内容也保底 545px —— 之前纯 fit-content 只有303px，
+	     弹窗过小、按钮行(.button-row flex-wrap:wrap)被挤到换行。 */
+	width: fit-content;
+	min-width: min(545px, 92vw);
+	max-width: 80vw;
+}
+
+/* 文件框随容器宽度走，别用浏览器默认 intrinsic 宽撑破 */
+#modal_overlay > .modal:has(input[type="file"]) input[type="file"] {
+	max-width: 100%;
+}
+
+/* ui.js 的上传弹窗真实结构（hideModal 里的 uploadFile）：
+     .modal > p(说明) + div[display:flex] > (.left[flex:1] = 选择文件按钮
+                                            .right[flex:1] = 取消 + 上传)
+   默认左右各占一半、右侧组贴中线，两组之间只有 129px 且上传按钮离右缘 56px。
+   用户要求拉开"选择文件"与"取消/上传"的间距 → 右侧整组靠右并加左间距。 */
+/* 按钮行左组（选择文件）必须贴左：标题/说明的 text-align:center（方案2）
+   会被 .left 继承 → 按钮被推到 .left 中央，左侧出现空白间隔（用户反馈）。 */
+#modal_overlay > .modal:has(input[type="file"]) > div[style*="display:flex"] .left {
+	text-align: left;
+}
+
+#modal_overlay > .modal:has(input[type="file"]) > div[style*="display:flex"] .right {
+	display: flex;
+	align-items: center;
+	justify-content: flex-end;
+	gap: 10px;
+	margin-left: 32px;
+}
+
+/* 按钮收拢到右侧一组：.button-row 首按钮的 margin-right:auto 会把
+   "取消"甩到最左、"上传"顶到最右（间距 300+px 的空白带）。小弹窗里取消。 */
+#modal_overlay > .modal:has(input[type="file"]) .button-row > button:first-of-type {
+	margin-right: 0;
+}
+
+/* 方案2（用户选定）：标题与说明文字**居中**——左对齐时短文本行右侧会留
+   128~195px 空白，居中后空白分到两侧更平衡；文件框仍左对齐、按钮仍右对齐 */
+#modal_overlay > .modal:has(input[type="file"]) > :not(input):not(.button-row) {
+	text-align: center;
+}
+
+/* 对齐方式（用户最终指定）：标题、说明文字、选择文件按钮一律**左对齐**，
+   只有"取消/上传"两个按钮右对齐（.button-row 本就是 flex-end）。
+   （曾试过内容整体右对齐，用户反馈说明文字也要左 → 回到默认左对齐，
+   仅保留下方文件框的显式左推，防止被带 text-align 的包装层甩到右边。） */
+
+#modal_overlay > .modal:has(input[type="file"]) input[type="file"] {
+	display: block;
+	/* 选择文件按钮保持左对齐（用户指定）：块级 + margin-right:auto
+	   推到左侧——只靠 text-align:right 会把它甩到右边 */
+	margin-right: auto;
+	margin-left: 0;
+}
+
+/* ===== 会话过期/重新登录弹窗（luci.js notifySessionExpiry）收窄 =====
+   结构（源码确认）：.modal > h4 + div.alert-message.warning + div.right(登录按钮)。
+   它走通用规则 width:80% → 1920 屏上占 1536px，只有一句话却拉满整屏（用户反馈）。
+   按内容收窄：fit-content + 保底 420px（窄屏 92vw），上限 80vw；只命中"同时带
+   直接子级 .alert-message 与 .right"的弹窗，与上传弹窗（.right 在 flex 行内）不冲突。 */
+#modal_overlay > .modal:has(> .alert-message):has(> .right) {
+	width: fit-content;
+	/* 窄屏上原来 min(420px,92vw) 等于 92% 屏宽 → 看着像贴边大卡片；
+	   按用户要求改为"屏幕宽度的 75%"：窄屏下 min 与 max 都落到 75vw，
+	   长文本也被限在 75% 内换行；宽屏仍保底 420px 不会缩水 */
+	min-width: min(420px, 75vw);
+	max-width: 75vw;
+}
