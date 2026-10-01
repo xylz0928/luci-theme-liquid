@@ -5164,3 +5164,28 @@ body:is([data-page="admin-system-startup"], [data-page="admin/system/startup"])
 	td.cbi-section-actions > div > :nth-child(5):hover {
 	filter: brightness(1.08);
 }
+
+/* ===== 小体积弹窗：含文件选择控件的对话框按内容收窄 =====
+   （用户反馈："选择要上传的文件…取消/上传"这类弹窗异常宽，右侧大片空白）
+   根因：#modal_overlay > .modal 固定 width:80%（max 80vw）——1920 屏上
+   一个只有标题+文件框+两个按钮的对话框也占 1536px；再叠加 .button-row
+   的 flex-end + 首按钮 margin-right:auto（取消在最左、上传在最右），
+   空白被进一步拉开。
+   方案：只对含 input[type=file] 的弹窗收窄到 520px（按内容包裹、文字
+   正常换行），按钮行随之收拢；其它表单弹窗保持 80% 不变。 */
+#modal_overlay > .modal:has(input[type="file"]) {
+	width: min(520px, 92vw);
+	min-width: 0;
+	max-width: none;
+}
+
+/* 文件框随容器宽度走，别用浏览器默认 intrinsic 宽撑破 */
+#modal_overlay > .modal:has(input[type="file"]) input[type="file"] {
+	max-width: 100%;
+}
+
+/* 按钮收拢到右侧一组：.button-row 首按钮的 margin-right:auto 会把
+   "取消"甩到最左、"上传"顶到最右（间距 300+px 的空白带）。小弹窗里取消。 */
+#modal_overlay > .modal:has(input[type="file"]) .button-row > button:first-of-type {
+	margin-right: 0;
+}
