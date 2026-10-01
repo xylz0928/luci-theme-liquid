@@ -5177,11 +5177,13 @@ body:is([data-page="admin-system-startup"], [data-page="admin/system/startup"])
 	/* 按内容自适应（fit-content）：内容已全部左对齐，固定 520px 会在右侧
 	   留出大片空白（实测344px）。弹窗宽=最宽一行内容+内边距；超长说明文字
 	   仍会被 max-width 限制并正常换行 */
+	/* 宽度策略（用户定量要求：约当前的 180% ≈545px，且按钮/内容不许换行）：
+	   - fit-content：内容长时随内容展开（上限 80vw），绝不逼元素换行；
+	   - min-width 545：短内容也保底 545px —— 之前纯 fit-content 只有303px，
+	     弹窗过小、按钮行(.button-row flex-wrap:wrap)被挤到换行。 */
 	width: fit-content;
-	/* 上限放开回 80vw（原弹窗上限）：520px 会逼长说明/多元素换行，
-	   而 fit-content 保证短内容仍收窄、长内容随内容展开不折行 */
+	min-width: min(545px, 92vw);
 	max-width: 80vw;
-	min-width: 0;
 }
 
 /* 文件框随容器宽度走，别用浏览器默认 intrinsic 宽撑破 */
