@@ -5178,7 +5178,9 @@ body:is([data-page="admin-system-startup"], [data-page="admin/system/startup"])
 	   留出大片空白（实测344px）。弹窗宽=最宽一行内容+内边距；超长说明文字
 	   仍会被 max-width 限制并正常换行 */
 	width: fit-content;
-	max-width: min(520px, 92vw);
+	/* 上限放开回 80vw（原弹窗上限）：520px 会逼长说明/多元素换行，
+	   而 fit-content 保证短内容仍收窄、长内容随内容展开不折行 */
+	max-width: 80vw;
 	min-width: 0;
 }
 
