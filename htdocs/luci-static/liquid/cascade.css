@@ -5190,17 +5190,10 @@ body:is([data-page="admin-system-startup"], [data-page="admin/system/startup"])
 	margin-right: 0;
 }
 
-/* 内容右对齐到弹窗右侧（用户反馈：说明文字/文件框靠左留出大片右侧空白）：
-   - 弹窗内默认右对齐 → 说明段落右缘与按钮右缘齐平；
-   - 标题保持左侧（阅读习惯）；
-   - 文件框 display:block + margin-left:auto → 右缘同样贴齐右内边距。 */
-#modal_overlay > .modal:has(input[type="file"]) {
-	text-align: right;
-}
-
-#modal_overlay > .modal:has(input[type="file"]) h4 {
-	text-align: left;
-}
+/* 对齐方式（用户最终指定）：标题、说明文字、选择文件按钮一律**左对齐**，
+   只有"取消/上传"两个按钮右对齐（.button-row 本就是 flex-end）。
+   （曾试过内容整体右对齐，用户反馈说明文字也要左 → 回到默认左对齐，
+   仅保留下方文件框的显式左推，防止被带 text-align 的包装层甩到右边。） */
 
 #modal_overlay > .modal:has(input[type="file"]) input[type="file"] {
 	display: block;
