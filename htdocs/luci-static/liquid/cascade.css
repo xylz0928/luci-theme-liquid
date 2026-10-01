@@ -5006,3 +5006,23 @@ table.liquid-actions-overflow.liquid-grid th:not(.cbi-section-actions) {
 	word-break: normal;
 	overflow-wrap: break-word;
 }
+
+/* ===== 移动端（≤854px）：标签/值两列表的标签列改为按自身文字宽度收缩 =====
+   原来固定 20ch≈145px（为了让最长标签"CPU 使用率（%）"单行），但短标签
+   （主机名/型号/温度…只需 40~60px）右侧空出 ~100px，把值列挤到换行——
+   实测移动端值列因此少 ~90px。改为 flex:0 1 auto + max-width:20ch：
+   每行标签按自己文字宽度（长标签仍封顶 20ch 不会吃掉整行），值列拿回
+   空间；代价是各行列起点不再对齐（移动端优先"值不换行"）。
+   桌面（>854px）保持 20ch 固定列，维持对齐观感。 */
+@media screen and (max-width: 854px) {
+	.table:has(td[width="33%"]) tr > td[width="33%"],
+	.cbi-section-table tr > td[width="33%"],
+	.table tr > td[width="33%"] {
+		flex: 0 1 auto !important;
+		/* 必须显式压过 width="33%" 表现属性：flex-basis:auto 会取 width 当
+		   基准 → 仍是 33%(≈145px)，标签根本没收缩（实测踩过） */
+		width: max-content !important;
+		max-width: 20ch !important;
+		min-width: 0 !important;
+	}
+}
