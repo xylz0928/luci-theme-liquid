@@ -5196,6 +5196,12 @@ body:is([data-page="admin-system-startup"], [data-page="admin/system/startup"])
                                             .right[flex:1] = 取消 + 上传)
    默认左右各占一半、右侧组贴中线，两组之间只有 129px 且上传按钮离右缘 56px。
    用户要求拉开"选择文件"与"取消/上传"的间距 → 右侧整组靠右并加左间距。 */
+/* 按钮行左组（选择文件）必须贴左：标题/说明的 text-align:center（方案2）
+   会被 .left 继承 → 按钮被推到 .left 中央，左侧出现空白间隔（用户反馈）。 */
+#modal_overlay > .modal:has(input[type="file"]) > div[style*="display:flex"] .left {
+	text-align: left;
+}
+
 #modal_overlay > .modal:has(input[type="file"]) > div[style*="display:flex"] .right {
 	display: flex;
 	align-items: center;
