@@ -5174,9 +5174,12 @@ body:is([data-page="admin-system-startup"], [data-page="admin/system/startup"])
    方案：只对含 input[type=file] 的弹窗收窄到 520px（按内容包裹、文字
    正常换行），按钮行随之收拢；其它表单弹窗保持 80% 不变。 */
 #modal_overlay > .modal:has(input[type="file"]) {
-	width: min(520px, 92vw);
+	/* 按内容自适应（fit-content）：内容已全部左对齐，固定 520px 会在右侧
+	   留出大片空白（实测344px）。弹窗宽=最宽一行内容+内边距；超长说明文字
+	   仍会被 max-width 限制并正常换行 */
+	width: fit-content;
+	max-width: min(520px, 92vw);
 	min-width: 0;
-	max-width: none;
 }
 
 /* 文件框随容器宽度走，别用浏览器默认 intrinsic 宽撑破 */
