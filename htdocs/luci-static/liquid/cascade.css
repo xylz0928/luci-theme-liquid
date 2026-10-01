@@ -4433,7 +4433,10 @@ pre {
 	}
 
 	#maincontent {
-		padding: 0 16px 64px;
+		/* 外层卡片到屏幕边缘的留白：16px → 4px（用户反馈移动端概览页
+		   padding 偏大，大幅压缩）。内层卡片自身仍有 2~6px padding，
+		   文字距边缘合计约 14px，输入框聚焦 ring(3px) 也不至于贴边 */
+		padding: 0 4px 64px;
 		margin-left: 0;
 		/* r19 起移动端页面纵向滚动由文档承担（见下方「文档级滚动」块，
 		   为了让安卓浏览器地址栏随滚动收缩）。此处 flex-shrink:0 保证
