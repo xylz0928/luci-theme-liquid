@@ -5015,20 +5015,20 @@ table.liquid-actions-overflow.liquid-grid th:not(.cbi-section-actions) {
    原来固定 20ch≈145px（为了让最长标签"CPU 使用率（%）"单行），但短标签
    （主机名/型号/温度…只需 40~60px）右侧空出 ~100px，把值列挤到换行——
    实测移动端值列因此少 ~90px。改为 flex:0 1 auto + max-width:20ch：
-   改为固定 6 个字的内容宽（6em）：既让值列拿回空间（比 20ch≈145px 窄），
+   改为固定 5 个字的内容宽（5em）：既让值列拿回空间（比 20ch≈145px 窄），
    又保证全表标签列等宽、值列起点对齐（用户反馈：按文字收缩会让值列
-   逐行错位）。超过 6 字的标签（如 CPU 使用率（%））在本格内折行。
+   逐行错位）。超过 5 字的标签（如 CPU 使用率（%））在本格内折行。
    桌面（>854px）保持 20ch 固定列。 */
 @media screen and (max-width: 854px) {
 	.table:has(td[width="33%"]) tr > td[width="33%"],
 	.cbi-section-table tr > td[width="33%"],
 	.table tr > td[width="33%"] {
-		flex: 0 0 6em !important;
-		box-sizing: content-box !important; /* 6em=6 个汉字的内容宽，外加自身 padding */
-		width: 6em !important;
+		flex: 0 0 5em !important;
+		box-sizing: content-box !important; /* 5em=5 个汉字的内容宽，外加自身 padding */
+		width: 5em !important;
 		max-width: none !important;
 		min-width: 0 !important;
-		/* 固定 6 字宽后，超过 6 字的标签（CPU 使用率（%））在本格内折行，
+		/* 固定 5 字宽后，超过 5 字的标签（CPU 使用率（%））在本格内折行，
 		   值列起点全表对齐（用户反馈：按文字收缩会导致值列不齐） */
 		white-space: normal !important;
 		overflow-wrap: break-word;
