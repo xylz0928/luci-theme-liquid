@@ -5242,6 +5242,9 @@ body:is([data-page="admin-system-startup"], [data-page="admin/system/startup"])
    直接子级 .alert-message 与 .right"的弹窗，与上传弹窗（.right 在 flex 行内）不冲突。 */
 #modal_overlay > .modal:has(> .alert-message):has(> .right) {
 	width: fit-content;
-	min-width: min(420px, 92vw);
-	max-width: 80vw;
+	/* 窄屏上原来 min(420px,92vw) 等于 92% 屏宽 → 看着像贴边大卡片；
+	   按用户要求改为"屏幕宽度的 75%"：窄屏下 min 与 max 都落到 75vw，
+	   长文本也被限在 75% 内换行；宽屏仍保底 420px 不会缩水 */
+	min-width: min(420px, 75vw);
+	max-width: 75vw;
 }
